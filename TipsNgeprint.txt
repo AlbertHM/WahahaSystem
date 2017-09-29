@@ -1,0 +1,5 @@
+Odd Reverse
+Even No Reverse
+Sum of page always Even
+
+Cheers :)
