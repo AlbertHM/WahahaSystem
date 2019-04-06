@@ -53,11 +53,14 @@ class Kendaraan():
 		else:
 			return 0
 		
-	def jalan(self):
-		
+	def jalan(self):		
+		temp 				= self.currentorder[3:5] #[Waktu, Jarak]
+		self.waktutempuh 	+= temp[0]
+		self.jaraktempuh 	+= temp[1]
 		self.currentnode 	= self.nextnode
 		
-	def cekorder(self):
+	def cekorder(self, nodeId):
+		#for p in daftar_nodes[nodesId].avorder
 		pass
 	
 	def cekdemand(self):
@@ -77,10 +80,23 @@ class Nodes():
 		
 	def cleanup(self):
 		for i in range(len(self.avorder)-1, -1,-1):
-			if(self.avorder[i][4]==0):
+			if(self.avorder[i][6]==0):
 				del self.avorder[i]
 
+def cavod(i):
+	for p in i:
+		print(p.nama)
+		print(p.avorder)
+		print("===========")
+	
+daftar_order		= []
+daftar_kendaraan	= []
+daftar_nodes		= []
+daftar_rute 		= []
+
 def main():	
+	global daftar_kendaraan, daftar_nodes, daftar_order, daftar_rute
+	
 	# Load Data #
 	#Order
 	df = pd.read_excel(file_name, sheet_name = "Order")
@@ -97,9 +113,6 @@ def main():
 	temp = df.values.tolist()
 	for n in temp:
 		daftar_rute.append([i for i in n if str(i) != 'nan'])
-	#Distance and Time
-	df = pd.read_excel(file_name, sheet_name = "DT")
-	daftar_DT = df.values.tolist()
 	#Nodes
 	df = pd.read_excel(file_name, sheet_name = "Nodes")
 	temp = df.values.tolist()
@@ -111,20 +124,22 @@ def main():
 	print(daftar_kendaraan)
 	print(daftar_nodes)
 	print(daftar_rute)
-	print(daftar_DT)
 	'''
 	# Assign order to node #
 	for p in daftar_order:
 		daftar_nodes[p[1]-1].avorder.append(p)
 	for p in daftar_nodes:
 		p.cleanup()
-		
+	
+	cavod(daftar_nodes)
+	
 	# Assign Route for every vehicle #
 	for p in range(0, len(daftar_rute)):
 		daftar_kendaraan[p].rute = daftar_rute[p]
-		#print(daftar_kendaraan[p].rute)
+		print(daftar_kendaraan[p].rute)
 	
 	# Running Simulation #
+	'''
 	jalan = 1
 	while(jalan):
 		jalan = 0
@@ -133,7 +148,7 @@ def main():
 				p.drop()
 			if(p.plan):
 				jalan = 1
-				p.jalan()
+				p.jalan()'''
 	
 	
 if __name__ == '__main__':
