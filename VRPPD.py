@@ -36,17 +36,17 @@ class Kendaraan():
 		self.jaraktempuh	= 0
 		self.waktutempuh	= 0
 		self.rute			= []
-		self.currentindex	= 0
-		self.currentnode	= 0
-		self.nextnode		= 0
+		self.cri			= 0 #current rute index
+		self.currentnodeid	= 0
+		self.nextnodeid		= 0
 		self.currentorder	= []
 	
 	def plan(self):
 		if((self.currentindex + 1) > (len(self.rute)-1)):
-			self.nextnode = self.rute[0]
+			self.nextnodeid = self.rute[0]
 			self.currentindex = 0
 		else:
-			self.nextnode = self.rute(self.currentindex+1)
+			self.nextnodeid = self.rute(self.currentindex+1)
 		
 		if(self.nextnode != -1):
 			return 1
@@ -57,11 +57,20 @@ class Kendaraan():
 		temp 				= self.currentorder[3:5] #[Waktu, Jarak]
 		self.waktutempuh 	+= temp[0]
 		self.jaraktempuh 	+= temp[1]
-		self.currentnode 	= self.nextnode
+		self.currentnodeid	= self.nextnodeid
 		
-	def cekorder(self, nodeId):
-		#for p in daftar_nodes[nodesId].avorder
-		pass
+	def cekorder(self, ruteindex):
+		nodeId = self.rute[ruteindex]
+		if(ruteindex+1 == len(self.rute)):
+			nodeIdnext = 1
+		else:
+			nodeIdnext = self.rute[ruteindex+1]
+		for p in daftar_nodes[nodeId-1].avorder:
+			if(p[2] == nodeIdnext):
+				self.currentorder = p
+				p[6] -= 1
+				return 1
+		return 0
 	
 	def cekdemand(self):
 		pass
@@ -112,7 +121,7 @@ def main():
 	df = pd.read_excel(file_name, sheet_name = "Rute")
 	temp = df.values.tolist()
 	for n in temp:
-		daftar_rute.append([i for i in n if str(i) != 'nan'])
+		daftar_rute.append([int(i) for i in n if str(i) != 'nan'])
 	#Nodes
 	df = pd.read_excel(file_name, sheet_name = "Nodes")
 	temp = df.values.tolist()
@@ -139,6 +148,14 @@ def main():
 		print(daftar_kendaraan[p].rute)
 	
 	# Running Simulation #
+	'''
+	print(daftar_nodes[1].avorder)
+	daftar_kendaraan[4].cekorder(1)
+	daftar_kendaraan[4].jalan()
+	print(daftar_kendaraan[4].jaraktempuh)
+	print(daftar_kendaraan[4].waktutempuh)
+	print(daftar_nodes[1].avorder)
+	'''
 	'''
 	jalan = 1
 	while(jalan):
