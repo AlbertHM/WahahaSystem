@@ -37,49 +37,74 @@ class Kendaraan():
 		self.waktutempuh	= 0
 		self.rute			= []
 		self.cri			= 0 #current rute index
+		self.nri			= 0
 		self.currentnodeid	= 0
 		self.nextnodeid		= 0
-		self.currentorder	= []
+		self.currenttask	= [-1]
+		self.aktif			= 1
+		self.log			= []
 	
 	def plan(self):
-		if((self.currentindex + 1) > (len(self.rute)-1)):
-			self.nextnodeid = self.rute[0]
-			self.currentindex = 0
-		else:
-			self.nextnodeid = self.rute(self.currentindex+1)
-		
-		if(self.nextnode != -1):
-			return 1
-		else:
+		n = 0
+		p = self.cekorder(self.cri)
+		if(p == 0):
+			n = self.cekdemand()
+		if(p+n == 0):
+			self.aktif = 0
 			return 0
+		self.jalan()
+		self.droptask()
+		return 1
 		
 	def jalan(self):		
-		temp 				= self.currentorder[3:5] #[Waktu, Jarak]
-		self.waktutempuh 	+= temp[0]
-		self.jaraktempuh 	+= temp[1]
+		self.log.append(self.currenttask[:])
+		self.waktutempuh 	+= self.currenttask[4]
+		self.jaraktempuh 	+= self.currenttask[3]
+		self.cri = self.nri
 		self.currentnodeid	= self.nextnodeid
 		
 	def cekorder(self, ruteindex):
 		nodeId = self.rute[ruteindex]
-		if(ruteindex+1 == len(self.rute)):
-			nodeIdnext = 1
+		if(ruteindex+1 == len(self.rute)): #Menentukan ID node selanjutnya
+			nodeIdnext = 1 #EP
 		else:
 			nodeIdnext = self.rute[ruteindex+1]
-		for p in daftar_nodes[nodeId-1].avorder:
+		for p in daftar_nodes[nodeId-1].avorder: #mencari apakah ada order yang mau ke nodeId selanjutnya
 			if(p[2] == nodeIdnext):
-				self.currentorder = p
-				p[6] -= 1
+				if(p[1] == nodeId):
+					self.currenttask = p
+					p[6] -= 1
 				return 1
 		return 0
 	
 	def cekdemand(self):
-		pass
-	
-	def pickup(self):
-		pass
+		flag = 0
+		for i in range(self.cri+1, len(self.rute)):
+			flag = self.cekorder(i)
+			if(flag==1):
+				self.nri = self.cri
+				taskid = str(self.currentnodeid)+"-"+str(self.rute[i])
+				for p in daftar_order:
+					if(taskid == p[0]):
+						temp = p[:]
+						temp[6] = -1
+						self.currenttask = temp 
+				return 1
+		for i in range(0, self.cri):
+			flag = cekorder(i)
+			if(flag==1):
+				self.nri = self.cri
+				taskid = str(self.currentnodeid)+"-"+str(self.rute[i])
+				for p in daftar_order:
+					if(taskid == p[0]):
+						temp = p[:]
+						temp[6] = -1
+						self.currenttask = temp 
+				return 1
+		return 0
 		
-	def drop(self):
-		self.currentorder	= [0]
+	def droptask(self):
+		self.currenttask	= [-1]
 		
 class Nodes():
 	def __init__(self, id, nama):
@@ -145,7 +170,7 @@ def main():
 	# Assign Route for every vehicle #
 	for p in range(0, len(daftar_rute)):
 		daftar_kendaraan[p].rute = daftar_rute[p]
-		print(daftar_kendaraan[p].rute)
+		#print(daftar_kendaraan[p].rute)
 	
 	# Running Simulation #
 	'''
@@ -156,17 +181,26 @@ def main():
 	print(daftar_kendaraan[4].waktutempuh)
 	print(daftar_nodes[1].avorder)
 	'''
-	'''
-	jalan = 1
-	while(jalan):
-		jalan = 0
+	flag = 1
+	iterasi = 0
+	while(flag):
+		flag = 0
 		for p in daftar_kendaraan:
-			if(p.currentorder):
-				p.drop()
-			if(p.plan):
-				jalan = 1
-				p.jalan()'''
-	
-	
+			flag = p.plan()
+			for c in daftar_nodes:
+				c.cleanup()
+		cavod(daftar_nodes)
+		iterasi += 1
+		print("===========> {}".format(iterasi))
+
+	for p in daftar_kendaraan:
+		print("{}\t{:.1f}\t{}".format(p.nomor, p.jaraktempuh, p.waktutempuh))
+	input()
+	'''
+	for q in daftar_kendaraan:
+		for p in q.log:
+			print(p)
+		print("{}\t{:.1f}\t{}".format(q.nomor, q.jaraktempuh, q.waktutempuh))
+	'''
 if __name__ == '__main__':
 	main()
