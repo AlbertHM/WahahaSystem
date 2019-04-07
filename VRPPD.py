@@ -186,7 +186,9 @@ def main():
 	while(flag):
 		flag = 0
 		for p in daftar_kendaraan:
-			flag = p.plan()
+			temp = p.plan()
+			if(temp==1):
+				flag = 1
 			for c in daftar_nodes:
 				c.cleanup()
 		cavod(daftar_nodes)
@@ -195,12 +197,10 @@ def main():
 
 	for p in daftar_kendaraan:
 		print("{}\t{:.1f}\t{}".format(p.nomor, p.jaraktempuh, p.waktutempuh))
-	input()
-	'''
+	#input()
 	for q in daftar_kendaraan:
 		for p in q.log:
 			print(p)
 		print("{}\t{:.1f}\t{}".format(q.nomor, q.jaraktempuh, q.waktutempuh))
-	'''
 if __name__ == '__main__':
 	main()
