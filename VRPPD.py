@@ -1,30 +1,5 @@
 import pandas as pd
 
-'''
-class MyClass(object):
-    def __init__(self, number):
-        self.number = number
-
-my_objects = []
-
-for i in range(100):
-    my_objects.append(MyClass(i))
-
-# later
-
-for obj in my_objects:
-    print obj.number
-    
-#Import xlsx
-df = pd.ExcelFile(file_name, sheet_name=SheetName)
-listdf = df.tolist() #Baris Pertama langsung diabaikan
-'''
-'''
-Struktur data order = [ID, Titik Awal, Titik Tujuan, Jumlah Penumpang]
-Struktur data kendaraan = [ID, Titik Sekarang, Rute, Jarak tempuh, Waktu tempuh]
-Struktur data lokasi = [Nama, List Order dengan titik awal nama lokasi]
-'''
-
 file_name = "DataMasuk.xlsx"
 	
 class Kendaraan():
@@ -38,71 +13,92 @@ class Kendaraan():
 		self.rute			= []
 		self.cri			= 0 #current rute index
 		self.nri			= 0
-		self.currentnodeid	= 0
+		self.currentnodeid	= 1
 		self.nextnodeid		= 0
 		self.currenttask	= [-1]
 		self.aktif			= 1
 		self.log			= []
 	
+	def cetak(self):
+		print(self.nomor)
+		print(self.cri)
+		print(self.nri)
+	
 	def plan(self):
-		n = 0
-		p = self.cekorder(self.cri)
-		if(p == 0):
-			n = self.cekdemand()
-		if(p+n == 0):
-			self.aktif = 0
-			return 0
-		self.jalan()
-		self.droptask()
+		#Melakukan pengecekan order pada titik tersebut
+		p = [1,0]
+		#print("Mulai proses =============")
+		#self.cetak()
+		p = list(self.cekorder(self.cri))
+		#Apabila ada, ambil tasknya p[0] status, p[1] available order
+		if(p[0]):
+		#	NRI = CRI + 1
+			#print("Masuk Order")
+			if(self.cri + 1 == len(self.rute)):
+				self.nri = 0
+			else:
+				self.nri = self.cri + 1
+			p[1][6] -=1
+		#Jika tidak, lakukan cek demand
+		else:
+		#	Untuk setiap nodes pada rute
+			#print("Masuk Demand")
+			k=0
+			for i in range(self.cri+1, len(self.rute)):
+		#		Cek Order jika ada NRI = index node
+				k = list(self.cekorder(i))[0]
+				#print("Checking")
+				#print(str(k) +"--"+ str(i))
+				if(k==1):
+					self.nri = i
+					break
+			if(k!=1):
+				for i in range(0, self.cri):
+					k = list(self.cekorder(i))[0]
+					#print(str(k) +"--"+ str(i))
+					if(k==1):
+						self.nri = i
+						break
+			#print("End of checking")
+			if(k!=1):
+				print("STOPPING CONDITION")
+				self.cetak()
+				return 0
+			taskId = str(self.rute[self.cri]) +"-"+ str(self.rute[self.nri])
+			#print("TASK ID")
+			#print(taskId)
+			for u in daftar_order:
+				#print("get here")
+				if(taskId == u[0]):
+					#print("gotcha")
+					p[1] = u[:]
+					p[1][6] = -1
+					break
+		#	Berjalan ke nodes yg di tunjuk NRI tersebut
+		self.log.append(p[1][:])
+		#print("Current task " +str(p[1][:]))
+		self.waktutempuh += p[1][4]
+		self.jaraktempuh += p[1][3]
+		#print("CRI | NRI0 : " + str(self.cri) + "\t" +str(self.nri))
+		self.cri = self.nri
+		#self.cetak()
+		#print("Akhir proses =============")
 		return 1
 		
-	def jalan(self):		
-		self.log.append(self.currenttask[:])
-		self.waktutempuh 	+= self.currenttask[4]
-		self.jaraktempuh 	+= self.currenttask[3]
-		self.cri = self.nri
-		self.currentnodeid	= self.nextnodeid
-		
 	def cekorder(self, ruteindex):
-		nodeId = self.rute[ruteindex]
+		#print("===/CekOrder\===")
+		a = self.rute[ruteindex]
 		if(ruteindex+1 == len(self.rute)): #Menentukan ID node selanjutnya
-			nodeIdnext = 1 #EP
+			b = 1 #EP
 		else:
-			nodeIdnext = self.rute[ruteindex+1]
-		for p in daftar_nodes[nodeId-1].avorder: #mencari apakah ada order yang mau ke nodeId selanjutnya
-			if(p[2] == nodeIdnext):
-				if(p[1] == nodeId):
-					self.currenttask = p
-					p[6] -= 1
-				return 1
-		return 0
-	
-	def cekdemand(self):
-		flag = 0
-		for i in range(self.cri+1, len(self.rute)):
-			flag = self.cekorder(i)
-			if(flag==1):
-				self.nri = self.cri
-				taskid = str(self.currentnodeid)+"-"+str(self.rute[i])
-				for p in daftar_order:
-					if(taskid == p[0]):
-						temp = p[:]
-						temp[6] = -1
-						self.currenttask = temp 
-				return 1
-		for i in range(0, self.cri):
-			flag = cekorder(i)
-			if(flag==1):
-				self.nri = self.cri
-				taskid = str(self.currentnodeid)+"-"+str(self.rute[i])
-				for p in daftar_order:
-					if(taskid == p[0]):
-						temp = p[:]
-						temp[6] = -1
-						self.currenttask = temp 
-				return 1
-		return 0
-		
+			b = self.rute[ruteindex+1]
+		for p in daftar_nodes[a-1].avorder:
+			if(p[2] == b):
+				#print("===\CekOrder/===")
+				return 1,p #Ada order nih, nih ordernya
+		#print("===\CekOrder/===")
+		return 0,-1 #Ga ada order yg cocok di titik ini
+				
 	def droptask(self):
 		self.currenttask	= [-1]
 		
