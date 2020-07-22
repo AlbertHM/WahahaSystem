@@ -1,0 +1,36 @@
+Calibrate at Matlab
+
+Matlab to open cv :
+https://stackoverflow.com/questions/46651936/convert-between-matlab-stereoparameters-and-opencv-stereorectify-stereo-calibrat/50925828#50925828
+
+cameraMatrix1 :
+  211.5754         0  172.2489
+         0  211.0051  125.6230
+         0         0    1.0000
+         
+cameraMatrix2 :
+  211.6649         0  172.7580
+         0  211.5250  129.5984
+         0         0    1.0000
+
+distCoeffs1 =
+
+   -0.3948    0.1465         0         0
+   
+distCoeffs2 =
+
+   -0.3621    0.0988         0         0
+
+R =
+
+    0.9999   -0.0069    0.0139
+    0.0070    1.0000   -0.0056
+   -0.0138    0.0057    0.9999
+   
+T =
+
+  -59.9263
+   -0.2992
+    1.5561
+    
+    
